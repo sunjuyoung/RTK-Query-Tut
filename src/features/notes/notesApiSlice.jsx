@@ -1,14 +1,17 @@
 import { createEntityAdapter, createSelector } from "@reduxjs/toolkit";
 import { apiSlice } from "../../app/api/apiSlice";
 
-const notesAdapter = createEntityAdapter({})
+const notesAdapter = createEntityAdapter({
+  sortComparer:(a,b) =>  a.content.localeCompare(b.content),
+  // sortComparer: (a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1
+})
 const initialState = notesAdapter.getInitialState();
 
 
 export const notesApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
       getNotes: builder.query({
-        query: () => '/api/member',
+        query: () => '/api/review',
         validateStatus:(response,result)=>{
             return response.status === 200 && !result.isError
         },
@@ -19,10 +22,10 @@ export const notesApiSlice = apiSlice.injectEndpoints({
         providesTags: (result, error, arg) => {
             if (result?.ids) {
                 return [
-                    { type: 'User', id: 'LIST' },
-                    ...result.ids.map(id => ({ type: 'User', id }))
+                    { type: 'Note', id: 'LIST' },
+                    ...result.ids.map(id => ({ type: 'Note', id }))
                 ]
-            } else return [{ type: 'User', id: 'LIST' }]
+            } else return [{ type: 'Note', id: 'LIST' }]
         }
       }),
     }),
@@ -32,12 +35,9 @@ export const notesApiSlice = apiSlice.injectEndpoints({
     useGetNotesQuery,
 } = notesApiSlice
 
-export const selectNotesResult = notesApiSlice.endpoints.getUsers.select()
+export const selectNotesResult = notesApiSlice.endpoints.getNotes.select()
 
-const selectNotesData = createSelector(
-    selectNotesResult,
-   
-)
+const selectNotesData = createSelector(selectNotesResult,notesResult => notesResult.data )
 
 export const {
     selectAll: selectAllNotes,
@@ -45,3 +45,4 @@ export const {
     selectIds: selectNoteIds
     // Pass in a selector that returns the users slice of state
 } = notesAdapter.getSelectors(state => selectNotesData(state) ?? initialState)
+//export const selectAll = notesAdapter.getSelectors(initialState)

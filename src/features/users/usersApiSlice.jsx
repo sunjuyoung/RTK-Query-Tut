@@ -28,10 +28,9 @@ export const usersApiSlice = apiSlice.injectEndpoints({
 
 export const selectUsersResult = usersApiSlice.endpoints.getUsers.select()
 
-const selectUsersData = createSelector(
-    selectUsersResult,
-    usersResult => usersResult.data // normalized state object with ids & entities
-)
+// normalized state object with ids & entities
+const selectUsersData = createSelector(selectUsersResult,usersResult => usersResult.data )
+
 
 export const {
     selectAll: selectAllUsers,

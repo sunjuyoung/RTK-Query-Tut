@@ -32,7 +32,7 @@ export const notesApiSlice = apiSlice.injectEndpoints({
 
       addNewNote: builder.mutation({
         query: initialUserData => ({
-          url: '/api/review/register',
+          url: '/api/review',
           method: 'POST',
           body :{
             ...initialUserData,
@@ -42,8 +42,8 @@ export const notesApiSlice = apiSlice.injectEndpoints({
       }),
 
       updateNote: builder.mutation({
-        query: ({id},initialUserData) => ({
-          url: `/api/review/${id}`,
+        query: ({...initialUserData}) => ({
+          url: `/api/review/${initialUserData.id}`,
           method: 'PATCH',
           body :{
             ...initialUserData,

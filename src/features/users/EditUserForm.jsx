@@ -3,10 +3,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 import { useDeleteUserMutation, useUpdateUserMutation } from './usersApiSlice'
 import { useNavigate } from 'react-router-dom'
-import { ROLES } from "../../config/roles"
+import { GRADES } from "../../config/grades";
 
 
-const USER_REGEX = /^[A-z]{3,20}$/
+const USER_REGEX = /^[A-z0-9]{4,20}$/
 const PWD_REGEX = /^[A-z0-9!@#$%]{4,12}$/
 const EditUserForm = ({user}) => {
 
@@ -18,6 +18,7 @@ const EditUserForm = ({user}) => {
     }] = useUpdateUserMutation();
 
     const [deleteUser, {
+        isLoading:isDelLoading,
         isSuccess: isDelSuccess,
         isError: isDelError,
         error: delerror
@@ -26,11 +27,13 @@ const EditUserForm = ({user}) => {
     
 
     const [email,setEmail] = useState('')
-    const [name, setName] = useState('');
+    const [name, setName] = useState(user.name);
     const [validName, setValidName] = useState(false);
     const [password, setPassword] = useState('')
     const [validPassword, setValidPassword] = useState(false);
-    const [roles, setRoles] = useState(user.grade)
+    const [grade, setGrade] = useState(user.grade)
+
+    const navigate = useNavigate();
 
     useEffect(() => {
       setValidPassword(PWD_REGEX.test(password))
@@ -49,47 +52,58 @@ const EditUserForm = ({user}) => {
    
     }, [isSuccess, navigate])
 
+
+    useEffect(() => {
+        if(isDelSuccess){
+          navigate('/dash/users')
+        }
+     
+      }, [isDelSuccess, navigate])
+
     
-    
-    const navigate = useNavigate();
 
     const onNameChanged = (e) =>{setName(e.target.value)}
     const onPasswordChanged = (e) =>{setPassword(e.target.value)}
-    const onRolesChanged = e => {
+    const onGradesChanged = e => {
         const values = Array.from(
             e.target.selectedOptions,
             (option) => option.value
         )
-        setRoles(values)
+        setGrade(values)
     }
 
 
 
     const onSaveUserClicked = async(e) =>{
         e.preventDefault();
+
         if(canSave){
-            await updateUser({name,password,email})
+            await updateUser({memberId:user.id,name:name})
+            navigate("/dash/users");
         }
     }
 
     const onDeleteUserClicked = async(e) =>{
+        e.preventDefault();
         await deleteUser({ id: user.id })
+        navigate('/dash/users')
+    
     }
 
     const errClass = isError ? "errmsg" : "offscreen"
     const validUserClass = !validName ? 'form__input--incomplete' : ''
     const validPwdClass = !validPassword ? 'form__input--incomplete' : ''
-    const validRolesClass = !Boolean(roles.length) ? 'form__input--incomplete' : ''
+    //const validRolesClass = !Boolean(roles.length) ? 'form__input--incomplete' : ''
 
     const canSave = [validPassword,validName].every(Boolean) && !isLoading;
 
-    const options = Object.values(ROLES).map(role => {
+    const options = Object.values(GRADES).map(grade => {
         return (
             <option
-                key={role}
-                value={role}
+                key={grade}
+                value={grade}
 
-            > {role}</option >
+            > {grade}</option >
         )
     })
 
@@ -122,8 +136,8 @@ const EditUserForm = ({user}) => {
                     Username: <span className="nowrap">[3-20 letters]</span></label>
                 <input
                     className={`form__input ${validUserClass}`}
-                    id="username"
-                    name="username"
+                    id="name"
+                    name="name"
                     type="text"
                     autoComplete="off"
                     value={name}
@@ -153,16 +167,16 @@ const EditUserForm = ({user}) => {
                     />
                 </label> */}
 
-                <label className="form__label" htmlFor="roles">
-                    ASSIGNED ROLES:</label>
+                <label className="form__label" htmlFor="grade">
+                    ASSIGNED Grade:</label>
                 <select
-                    id="roles"
-                    name="roles"
-                    className={`form__select ${validRolesClass}`}
-                    multiple={true}
+                    id="grade"
+                    name="grade"
+                    className={`form__select`}
+                    //multiple={true}
                     size="3"
-                    value={roles}
-                    onChange={onRolesChanged}
+                    value={grade}
+                    onChange={onGradesChanged}
                 >
                     {options}
                 </select>

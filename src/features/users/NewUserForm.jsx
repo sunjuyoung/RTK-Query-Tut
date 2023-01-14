@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave } from "@fortawesome/free-solid-svg-icons"
-import { ROLES } from '../../config/roles'
+import { ROLES } from '../../config/grades'
 import { useAddNewUserMutation } from './usersApiSlice'
 
 
-const USER_REGEX = /^[A-z]{3,20}$/
+const USER_REGEX = /^[A-z0-9]{4,20}$/
 const PWD_REGEX = /^[A-z0-9!@#$%]{4,12}$/
 
 const NewUserForm = () => {
@@ -17,12 +17,15 @@ const NewUserForm = () => {
         isError,
         error
     }] = useAddNewUserMutation();
+    
 
     const [email,setEmail] = useState('')
     const [name, setName] = useState('');
     const [validName, setValidName] = useState(false);
     const [password, setPassword] = useState('')
     const [validPassword, setValidPassword] = useState(false);
+    const navigate = useNavigate();
+
 
     useEffect(() => {
       setValidPassword(PWD_REGEX.test(password))
@@ -42,9 +45,6 @@ const NewUserForm = () => {
     }, [isSuccess, navigate])
     
 
-
-    const navigate = useNavigate();
-
     const onNameChanged = (e) =>{setName(e.target.value)}
     const onPasswordChanged = (e) =>{setPassword(e.target.value)}
     const onEmailChanged = (e) =>{setEmail(e.target.value)}
@@ -63,7 +63,7 @@ const NewUserForm = () => {
 
     const content = (
         <>
-            <p className={errClass}>{error?.data?.message}</p>
+            <p className={errClass}>{error?.data[0]?.defaultMessage}</p>
 
             <form className="form" onSubmit={onSaveUserClicked}>
                 <div className="form__title-row">
